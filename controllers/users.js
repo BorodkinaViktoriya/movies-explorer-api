@@ -83,7 +83,7 @@ const login = (req, res, next) => {
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'big-secret-key', { expiresIn: '7d' });
-      return res.status(200).send({ token });
+      return res.send({ token });
     })
     .catch((err) => {
       if (err.message === 'not_found') {
