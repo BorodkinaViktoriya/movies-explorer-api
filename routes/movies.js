@@ -1,20 +1,45 @@
 const router = require('express').Router();
-const { celebrate, Joi } = require('celebrate');
+const validator = require('validator');
+const {celebrate, Joi} = require('celebrate');
 const {
-  getMovies, createMovie, deleteMovie,
+  getUserMovies, createMovie, deleteMovie,
 } = require('../controllers/movies');
-const urlRegexp = require('../constants/url-regexp');
 
-router.get('/', getMovies);
-router.post('', celebrate({
+router.get('/', getUserMovies);
+router.post('/', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().required().min(2).max(30),
-    link: Joi.string().required().regex(urlRegexp),
+    country: Joi.string().required(),
+    director: Joi.string().required(),
+    duration: Joi.number().required(),
+    year: Joi.string().required(),
+    description: Joi.string().required(),
+    image: Joi.string().required().custom((value, helpers) => {
+      if (validator.isURL(value)) {
+        return value;
+      }
+      return helpers.error(' URL изображения введен не корректно');
+    }),
+    trailerLink: Joi.string().required().custom((value, helpers) => {
+      if (validator.isURL(value)) {
+        return value;
+      }
+      return helpers.error(' URL трейлера введен не корректно');
+    }),
+    thumbnail: Joi.string().required().custom((value, helpers) => {
+      if (validator.isURL(value)) {
+        return value;
+      }
+      return helpers.error(' URL трейлера введен не корректно');
+    }),
+    nameRU: Joi.string().required(),
+    nameEN: Joi.string().required(),
+    movieId: Joi.number().required(),
   }),
 }), createMovie);
-router.delete('/:cardId', celebrate({
+
+router.delete('/:movieId', celebrate({
   params: Joi.object().keys({
-    cardId: Joi.string().alphanum().length(24).required(),
+    movieId: Joi.string().alphanum().length(24).required(),
   }),
 }), deleteMovie);
 

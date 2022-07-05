@@ -9,7 +9,7 @@ const NotFoundError = require('../errors/not-found-error');
 const UnauthorizedError = require('../errors/unathorized-error');
 const BadRequestError = require('../errors/bad-request-error');
 
-const getMe = (req, res, next) => {
+const getUser = (req, res, next) => {
   User.findById(req.user._id)
     .then((user) => {
       if (!user) {
@@ -94,7 +94,7 @@ const login = (req, res, next) => {
 };
 
 module.exports = {
-  getMe,
+  getUser,
   updateUser,
   createUser,
   login,
