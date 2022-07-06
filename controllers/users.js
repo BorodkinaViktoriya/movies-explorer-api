@@ -22,9 +22,6 @@ const getUser = (req, res, next) => {
       });
     })
     .catch((err) => {
-      if (err.kind === 'ObjectId') {
-        return next(new BadRequestError('Передан некорректный _id.'));
-      }
       return next(err);
     });
 };
