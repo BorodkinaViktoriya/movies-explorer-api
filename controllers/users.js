@@ -16,31 +16,42 @@ const getUser = (req, res, next) => {
       if (!user) {
         throw new NotFoundError('Пользователь по указанному _id не найден.');
       }
-      return res.send({
-        email: user.email,
-        name: user.name,
-      });
+      return res.send(user);
     })
-    .catch((err) => {
-      return next(err);
-    });
+    .catch((err) => next(err));
 };
 
 const updateUser = (req, res, next) => {
   const { name, email } = req.body;
-  return User.findByIdAndUpdate(req.user._id, { name, email }, {
-    new: true,
-    runValidators: true,
-  })
+  User.findOne({ email })
+    .then((baseUser) => {
+      if (!baseUser) {
+        return User.findByIdAndUpdate(
+          req.user._id,
+          { email, name },
+          { new: true, runValidators: true },
+        );
+      } if (baseUser._id.equals(req.user._id)) {
+        return User.findByIdAndUpdate(
+          req.user._id,
+          { name },
+          { new: true, runValidators: true },
+        );
+      }
+      return next(new ConflictError('Указанный email принадлежит другому пользователю.'));
+    })
     .then((user) => {
-      res.send(user);
+      if (!user) {
+        return next(new NotFoundError('Пользователь по указанному _id не найден.'));
+      }
+      return res.send(user);
     })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         return next(new BadRequestError('Переданы некорректные данные при обновлении профиля.'));
       }
       if (err.code === 11000) {
-        return next(new ConflictError('Такой emal уже существующет в базе '));
+        return next(new ConflictError('Такой email уже существующет в базе '));
       }
       return next(err);
     });
@@ -70,7 +81,7 @@ const createUser = (req, res, next) => {
         return next(new BadRequestError(' Переданы некорректные данные при создании пользователя. '));
       }
       if (err.code === 11000) {
-        return next(new ConflictError('Такой emal уже существующет в базе '));
+        return next(new ConflictError('Такой email уже существующет в базе '));
       }
       return next(err);
     });
